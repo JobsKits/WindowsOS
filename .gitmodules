@@ -1,0 +1,20 @@
+[submodule "WindowsOS_10"]
+	path = WindowsOS_10
+	url = https://github.com/JobsKits/WindowsOS_10.git
+	branch = main
+[submodule "WindowsOS_8.1"]
+	path = WindowsOS_8.1
+	url = https://github.com/JobsKits/WindowsOS_8.1.git
+	branch = main
+[submodule "WindowsOS_7"]
+	path = WindowsOS_7
+	url = https://github.com/JobsKits/WindowsOS_7.git
+	branch = main
+[submodule "WindowsOS_XP"]
+	path = WindowsOS_XP
+	url = https://github.com/JobsKits/WindowsOS_XP.git
+	branch = main
+[submodule "WindowsOS_2003"]
+	path = WindowsOS_2003
+	url = https://github.com/JobsKits/WindowsOS_2003.git
+	branch = main
