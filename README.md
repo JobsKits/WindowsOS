@@ -1,10 +1,14 @@
 # 使用[**Github**](https://github.com/) **Realease**管理历史版本的Windows OS
 
-![Jobs倾情奉献](https://picsum.photos/1500/400 "Jobs出品，必属精品")
+![Jobs出品，必属精品](https://picsum.photos/1500/400)
 
 [toc]
 
-## 一、痛点一览
+## 一、友情外链
+
+* [**一键激活 windows/office**](https://kms.cx/)
+
+## 二、痛点一览
 
 * 中国大陆的云盘产品普遍会针对非会员进行限速
 * [**Github**](https://github.com/)会限制上传的**单文件大小**以及**本批次的总的文件大小**
@@ -12,13 +16,13 @@
   * 且单批次推送的文件体积不宜过大（根据 [**Github**](https://github.com/) 官方文档，<font color=red>单次 push 的硬性上限为 **2 GiB**</font>）
   * 此外， [**Github**](https://github.com/) 还建议仓库整体尽量保持在 **1 GB 以内**，**小于 5 GB** 会更利于克隆、拉取和日常协作性能
 
-## 二、[**Github**](https://github.com/) **Realease**
+## 三、[**Github**](https://github.com/) **Realease**
 
 * 经常接触到的代码版本控制，实际上是针对可读性较好的文本文件进行切片式管理
 * [**Github**](https://github.com/) **Realease**的设计目标是**针对代码打包以后的产物（二进制）**进行版本管理
   * 代码按照条件（平台/芯片等限制）通过编译器进行编译以后的产物，体积往往非常大
 
-## 三、实操
+## 四、实操
 
 * 环境安装/配置 [**gh**](https://cli.github.com/manual/gh)
 
