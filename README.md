@@ -1,4 +1,6 @@
-# 使用[**Github**](https://github.com/) **Realease**管理历史版本的Windows OS
+# 使用[**Github**](https://github.com/) **Release**管理历史版本的Windows OS
+
+> <font color=red>Windows OS 位于各子仓的 **Release**</font>
 
 ![Jobs出品，必属精品](https://picsum.photos/1500/400)
 
