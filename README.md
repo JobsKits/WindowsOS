@@ -9,6 +9,7 @@
 ## 一、友情外链
 
 * [**一键激活 windows/office**](https://kms.cx/)
+* [**Microsoft-Activation-Scripts**](https://github.com/massgravel/Microsoft-Activation-Scripts)
 
 ## 二、痛点一览
 
