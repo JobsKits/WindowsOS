@@ -30,7 +30,7 @@
 * 环境安装/配置 [**gh**](https://cli.github.com/manual/gh)
 
   ```shell
-  /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
+  $SYSTEM_BIN_DIR/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
   ```
 
   ```shell
@@ -54,16 +54,16 @@
 
   ```shell
   gh release create v1.0.0 \
-    "/Users/jobs/Downloads/WindowsOS/Windows 10/Win10_22H2_Chinese_Simplified_x32/Win10_22H2_Chinese_Simplified_x32.iso@1of4" \
-    "/Users/jobs/Downloads/WindowsOS/Windows 10/Win10_22H2_Chinese_Simplified_x32/Win10_22H2_Chinese_Simplified_x32.iso@2of4" \
-    "/Users/jobs/Downloads/WindowsOS/Windows 10/Win10_22H2_Chinese_Simplified_x32/Win10_22H2_Chinese_Simplified_x32.iso@3of4" \
-    "/Users/jobs/Downloads/WindowsOS/Windows 10/Win10_22H2_Chinese_Simplified_x32/Win10_22H2_Chinese_Simplified_x32.iso@4of4" \
-    "/Users/jobs/Downloads/WindowsOS/Windows 10/Win10_22H2_Chinese_Simplified_x64/Win10_22H2_Chinese_Simplified_x64.iso@1of4" \
-    "/Users/jobs/Downloads/WindowsOS/Windows 10/Win10_22H2_Chinese_Simplified_x64/Win10_22H2_Chinese_Simplified_x64.iso@2of4" \
-    "/Users/jobs/Downloads/WindowsOS/Windows 10/Win10_22H2_Chinese_Simplified_x64/Win10_22H2_Chinese_Simplified_x64.iso@3of4" \
-    "/Users/jobs/Downloads/WindowsOS/Windows 10/Win10_22H2_Chinese_Simplified_x64/Win10_22H2_Chinese_Simplified_x64.iso@4of4" \
-    "/Users/jobs/Downloads/WindowsOS/Windows 10/split.command" \
-    "/Users/jobs/Downloads/WindowsOS/Windows 10/merge.command" \
+    "~/Downloads/WindowsOS/Windows 10/Win10_22H2_Chinese_Simplified_x32/Win10_22H2_Chinese_Simplified_x32.iso@1of4" \
+    "~/Downloads/WindowsOS/Windows 10/Win10_22H2_Chinese_Simplified_x32/Win10_22H2_Chinese_Simplified_x32.iso@2of4" \
+    "~/Downloads/WindowsOS/Windows 10/Win10_22H2_Chinese_Simplified_x32/Win10_22H2_Chinese_Simplified_x32.iso@3of4" \
+    "~/Downloads/WindowsOS/Windows 10/Win10_22H2_Chinese_Simplified_x32/Win10_22H2_Chinese_Simplified_x32.iso@4of4" \
+    "~/Downloads/WindowsOS/Windows 10/Win10_22H2_Chinese_Simplified_x64/Win10_22H2_Chinese_Simplified_x64.iso@1of4" \
+    "~/Downloads/WindowsOS/Windows 10/Win10_22H2_Chinese_Simplified_x64/Win10_22H2_Chinese_Simplified_x64.iso@2of4" \
+    "~/Downloads/WindowsOS/Windows 10/Win10_22H2_Chinese_Simplified_x64/Win10_22H2_Chinese_Simplified_x64.iso@3of4" \
+    "~/Downloads/WindowsOS/Windows 10/Win10_22H2_Chinese_Simplified_x64/Win10_22H2_Chinese_Simplified_x64.iso@4of4" \
+    "~/Downloads/WindowsOS/Windows 10/split.command" \
+    "~/Downloads/WindowsOS/Windows 10/merge.command" \
     -R JobsKits/WindowsOS_10 \
     -t "Windows 10 Chinese(Simplified) CN" \
     -n "Split ISO upload"
@@ -71,14 +71,14 @@
 
   ```shell
   gh release create v1.0.0 \
-    "/Users/jobs/Downloads/WindowsOS/Windows 8.1/Win8.1_Chinese(Simplified)_x32/Win8.1_Chinese(Simplified)_x32.iso@1of2" \
-    "/Users/jobs/Downloads/WindowsOS/Windows 8.1/Win8.1_Chinese(Simplified)_x32/Win8.1_Chinese(Simplified)_x32.iso@2of2" \
-    "/Users/jobs/Downloads/WindowsOS/Windows 8.1/Win8.1_Chinese(Simplified)_x64/Win8.1_Chinese(Simplified)_x64.iso@1of4" \
-    "/Users/jobs/Downloads/WindowsOS/Windows 8.1/Win8.1_Chinese(Simplified)_x64/Win8.1_Chinese(Simplified)_x64.iso@2of4" \
-    "/Users/jobs/Downloads/WindowsOS/Windows 8.1/Win8.1_Chinese(Simplified)_x64/Win8.1_Chinese(Simplified)_x64.iso@3of4" \
-    "/Users/jobs/Downloads/WindowsOS/Windows 8.1/Win8.1_Chinese(Simplified)_x64/Win8.1_Chinese(Simplified)_x64.iso@4of4" \
-    "/Users/jobs/Downloads/WindowsOS/Windows 8.1/split.command" \
-    "/Users/jobs/Downloads/WindowsOS/Windows 8.1/merge.command" \
+    "~/Downloads/WindowsOS/Windows 8.1/Win8.1_Chinese(Simplified)_x32/Win8.1_Chinese(Simplified)_x32.iso@1of2" \
+    "~/Downloads/WindowsOS/Windows 8.1/Win8.1_Chinese(Simplified)_x32/Win8.1_Chinese(Simplified)_x32.iso@2of2" \
+    "~/Downloads/WindowsOS/Windows 8.1/Win8.1_Chinese(Simplified)_x64/Win8.1_Chinese(Simplified)_x64.iso@1of4" \
+    "~/Downloads/WindowsOS/Windows 8.1/Win8.1_Chinese(Simplified)_x64/Win8.1_Chinese(Simplified)_x64.iso@2of4" \
+    "~/Downloads/WindowsOS/Windows 8.1/Win8.1_Chinese(Simplified)_x64/Win8.1_Chinese(Simplified)_x64.iso@3of4" \
+    "~/Downloads/WindowsOS/Windows 8.1/Win8.1_Chinese(Simplified)_x64/Win8.1_Chinese(Simplified)_x64.iso@4of4" \
+    "~/Downloads/WindowsOS/Windows 8.1/split.command" \
+    "~/Downloads/WindowsOS/Windows 8.1/merge.command" \
     -R JobsKits/WindowsOS_8.1 \
     -t "Windows 8.1 Chinese(Simplified) CN" \
     -n "Split ISO upload"
@@ -86,12 +86,12 @@
 
   ```shell
   gh release create v1.0.0 \
-    "/Users/jobs/Downloads/WindowsOS/Windows 7/cn_windows_7_ultimate_with_sp1_x86_dvd_u_677486/cn_windows_7_ultimate_with_sp1_x86_dvd_u_677486.iso@1of2" \
-    "/Users/jobs/Downloads/WindowsOS/Windows 7/cn_windows_7_ultimate_with_sp1_x86_dvd_u_677486/cn_windows_7_ultimate_with_sp1_x86_dvd_u_677486.iso@2of2" \
-    "/Users/jobs/Downloads/WindowsOS/Windows 7/cn_windows_7_ultimate_with_sp1_x64_dvd_u_677408/cn_windows_7_ultimate_with_sp1_x64_dvd_u_677408.iso@1of2" \
-    "/Users/jobs/Downloads/WindowsOS/Windows 7/cn_windows_7_ultimate_with_sp1_x64_dvd_u_677408/cn_windows_7_ultimate_with_sp1_x64_dvd_u_677408.iso@2of2" \
-    "/Users/jobs/Downloads/WindowsOS/Windows 7/split.command" \
-    "/Users/jobs/Downloads/WindowsOS/Windows 7/merge.command" \
+    "~/Downloads/WindowsOS/Windows 7/cn_windows_7_ultimate_with_sp1_x86_dvd_u_677486/cn_windows_7_ultimate_with_sp1_x86_dvd_u_677486.iso@1of2" \
+    "~/Downloads/WindowsOS/Windows 7/cn_windows_7_ultimate_with_sp1_x86_dvd_u_677486/cn_windows_7_ultimate_with_sp1_x86_dvd_u_677486.iso@2of2" \
+    "~/Downloads/WindowsOS/Windows 7/cn_windows_7_ultimate_with_sp1_x64_dvd_u_677408/cn_windows_7_ultimate_with_sp1_x64_dvd_u_677408.iso@1of2" \
+    "~/Downloads/WindowsOS/Windows 7/cn_windows_7_ultimate_with_sp1_x64_dvd_u_677408/cn_windows_7_ultimate_with_sp1_x64_dvd_u_677408.iso@2of2" \
+    "~/Downloads/WindowsOS/Windows 7/split.command" \
+    "~/Downloads/WindowsOS/Windows 7/merge.command" \
     -R JobsKits/WindowsOS_7 \
     -t "Windows 7 Ultimate SP1 CN" \
     -n "Split ISO upload"
@@ -99,13 +99,13 @@
 
   ```shell
   gh release create v1.0.0 \
-    "/Users/jobs/Downloads/WindowsOS/Windows XP/Windows XP 32/GZOS_XP_1.1.iso" \
-    "/Users/jobs/Downloads/WindowsOS/Windows XP/Windows XP 32/WindowsXP_sp3.iso" \
-    "/Users/jobs/Downloads/WindowsOS/Windows XP/Windows XP 32/zh-hans_windows_xp_professional_with_service_pack_3_x86_cd_vl_x14-74070.iso" \
-    "/Users/jobs/Downloads/WindowsOS/Windows XP/Windows XP 32/zh-hans_windows_xp_professional_with_service_pack_3_x86_cd_x14-80404.iso" \
-    "/Users/jobs/Downloads/WindowsOS/Windows XP/Windows XP 64/韩文，简体中文，繁体中文版的语言包.iso" \
-    "/Users/jobs/Downloads/WindowsOS/Windows XP/Windows XP 64/Windows XP SP2（x64）VOL版安装序列号.txt" \
-    "/Users/jobs/Downloads/WindowsOS/Windows XP/Windows XP 64/XP_64bit.iso" \
+    "~/Downloads/WindowsOS/Windows XP/Windows XP 32/GZOS_XP_1.1.iso" \
+    "~/Downloads/WindowsOS/Windows XP/Windows XP 32/WindowsXP_sp3.iso" \
+    "~/Downloads/WindowsOS/Windows XP/Windows XP 32/zh-hans_windows_xp_professional_with_service_pack_3_x86_cd_vl_x14-74070.iso" \
+    "~/Downloads/WindowsOS/Windows XP/Windows XP 32/zh-hans_windows_xp_professional_with_service_pack_3_x86_cd_x14-80404.iso" \
+    "~/Downloads/WindowsOS/Windows XP/Windows XP 64/韩文，简体中文，繁体中文版的语言包.iso" \
+    "~/Downloads/WindowsOS/Windows XP/Windows XP 64/Windows XP SP2（x64）VOL版安装序列号.txt" \
+    "~/Downloads/WindowsOS/Windows XP/Windows XP 64/XP_64bit.iso" \
     -R JobsKits/WindowsOS_XP \
     -t "Windows XP CN" \
     -n "Split ISO upload"
@@ -113,8 +113,8 @@
 
   ```shell
   gh release create v1.0.0 \
-    "/Users/jobs/Downloads/WindowsOS/Windows 2003/Windows 2003 完整安装版.iso" \
-    "/Users/jobs/Downloads/WindowsOS/Windows 2003/Windows Server 2003 Enterprise Edition.iso" \
+    "~/Downloads/WindowsOS/Windows 2003/Windows 2003 完整安装版.iso" \
+    "~/Downloads/WindowsOS/Windows 2003/Windows Server 2003 Enterprise Edition.iso" \
     -R JobsKits/WindowsOS_2003 \
     -t "Windows 2003 " \
     -n "Split ISO upload"
