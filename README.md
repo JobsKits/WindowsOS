@@ -8,6 +8,8 @@
 
 ## 一、友情外链 <a href="#前言" style="font-size:17px; color:green;"><b>🔼</b></a> <a href="#🔚" style="font-size:17px; color:green;"><b>🔽</b></a>
 
+本目录中可独立运行的 `.command` 入口先显示内置自述：标题红色加粗，编号正文蓝色且不加粗；在终端按回车确认后才进入原有流程，按 `Ctrl+C` 取消。非彩色终端显示纯文本；没有可交互输入时停止，避免确认缺失后继续执行。
+
 * [**一键激活 windows/office**](https://kms.cx/)
 * [**Microsoft-Activation-Scripts**](https://github.com/massgravel/Microsoft-Activation-Scripts)
 
