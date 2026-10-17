@@ -6,6 +6,25 @@
 
 [toc]
 
+<strong id="submodule-quick-look">先看例子：Windows 子仓跟随父仓平台</strong>
+
+添加脚本的内置地址从 `https://github.com/JobsKits/WindowsOS_10.git` 改为 `../WindowsOS_10.git`，新增时生成的记录示例如下；本段不代表当前已运行添加流程：
+
+```ini
+[submodule "WindowsOS_10"]
+    path = WindowsOS_10
+    url = ../WindowsOS_10.git
+    branch = main
+```
+
+| 父仓地址示例 | 子仓解析地址 |
+| --- | --- |
+| `https://github.com/JobsKits/WindowsOS.git` | `https://github.com/JobsKits/WindowsOS_10.git` |
+| `https://gitee.com/JobsGo/WindowsOS.git` | `https://gitee.com/JobsGo/WindowsOS_10.git` |
+| `ssh://git@git.example.com:2222/team/WindowsOS.git` | `ssh://git@git.example.com:2222/team/WindowsOS_10.git` |
+
+**`path` 是本地目录，`url` 是远端仓名；目标平台须已有对应子仓、所需提交和添加分支。** 表格说明解析规则，不代表这些线路均已部署或实测；自建服务行为同样适用于 [**GitLab**](https://gitlab.com)。已有明确 URL 保留，分支默认 `main`，可通过 `SUBMODULE_BRANCH` 指定。仓库地址适配不会迁移 Release 附件。
+
 ## 一、友情外链 <a href="#前言" style="font-size:17px; color:green;"><b>🔼</b></a> <a href="#🔚" style="font-size:17px; color:green;"><b>🔽</b></a>
 
 本目录中可独立运行的 `.command` 入口先显示内置自述：标题红色加粗，编号正文蓝色且不加粗；在终端按回车确认后才进入原有流程，按 `Ctrl+C` 取消。非彩色终端显示纯文本；没有可交互输入时停止，避免确认缺失后继续执行。
@@ -123,5 +142,17 @@
   ```
 
   
+
+## 五、子模块的多平台地址 <a href="#前言" style="font-size:17px; color:green;"><b>🔼</b></a> <a href="#🔚" style="font-size:17px; color:green;"><b>🔽</b></a>
+
+`【MacOS】⬆️Git添加WindowsOS子模块.command` 为新增子模块使用 `../WindowsOS_10.git` 等相对地址，跟随父仓默认远端的平台、账号和协议，适用于 [**Git**](https://git-scm.com/) 支持的托管服务。目标平台必须已有同名子仓和所需提交；脚本不会创建镜像。已有明确 URL 会保留，不因绝对地址与相对地址表示不同而删除子模块。
+
+添加分支默认 `main`，平台分支异名时通过 `SUBMODULE_BRANCH` 指定，例如：
+
+```shell
+SUBMODULE_BRANCH=gitee /bin/zsh './【MacOS】⬆️Git添加WindowsOS子模块.command'
+```
+
+克隆脚本使用 `.gitmodules` 配合 `git submodule sync --recursive` 和 `git submodule update --init --recursive`；只增加另一个 remote 不会切换默认线路。Git 仓库地址兼容不改变 Release 资源的实际发布平台。
 
 <a id="🔚" href="#前言" style="font-size:17px; color:green; font-weight:bold;">我是有底线的➤点我回到首页</a>

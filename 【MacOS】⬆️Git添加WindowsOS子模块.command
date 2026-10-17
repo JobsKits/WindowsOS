@@ -1,4 +1,4 @@
-#!/usr/bin/env zsh
+#!/bin/zsh
 # 脚本自述：
 # - 脚本名称：【MacOS】⬆️Git添加WindowsOS子模块.command
 # - 核心用途：Git添加WindowsOS子模块。
@@ -31,7 +31,7 @@ jobs_intro_style() {
 # 打印固定自述，确认后才进入原有脚本流程。
 show_script_intro_and_wait() {
   printf '%s\n' '【MacOS】⬆️Git添加WindowsOS子模块.command' | jobs_intro_style title
-  printf '%s\n' '1、核心用途：Git添加WindowsOS子模块。' | jobs_intro_style body
+  printf '%s\n' '1、核心用途：Git添加WindowsOS子模块；新增地址跟随父仓平台、账号和协议。' | jobs_intro_style body
   printf '%s\n' '2、影响范围：Git 工作区、子模块或仓库状态；脚本指定文件或缓存的删除 / 清理；脚本所在工程或指定目标中的文件。' | jobs_intro_style body
   printf '%s\n' '3、运行策略：确认后执行原有流程；后续危险操作的确认保持原样。' | jobs_intro_style body
   printf '%s\n' '4、取消方式：按 Ctrl+C 终止；确认前不执行真实业务。' | jobs_intro_style body
@@ -164,8 +164,7 @@ ensure_submodule_url() {
       local configured_url
       configured_url="$(git config -f .gitmodules --get "$old_url" 2>/dev/null || true)"
       if [[ -n "$configured_url" && "$configured_url" != "$url" ]]; then
-        warn "检测到 $module_path 的 URL 不一致，旧：$configured_url，新：$url，准备重建"
-        remove_existing_submodule "$module_path"
+        warn "保留 $module_path 已有的明确 URL：$configured_url；不因地址表示不同重建子模块。"
       fi
     fi
   fi
@@ -247,13 +246,13 @@ main() {
   ensure_first_commit_if_needed
   print_status
 
-  local branch="main"
+  local branch="${SUBMODULE_BRANCH:-main}"
 
-  local url_win10="https://github.com/JobsKits/WindowsOS_10.git"
-  local url_win81="https://github.com/JobsKits/WindowsOS_8.1.git"
-  local url_win7="https://github.com/JobsKits/WindowsOS_7.git"
-  local url_winxp="https://github.com/JobsKits/WindowsOS_XP.git"
-  local url_win2003="https://github.com/JobsKits/WindowsOS_2003.git"
+  local url_win10="../WindowsOS_10.git"
+  local url_win81="../WindowsOS_8.1.git"
+  local url_win7="../WindowsOS_7.git"
+  local url_winxp="../WindowsOS_XP.git"
+  local url_win2003="../WindowsOS_2003.git"
 
   local path_win10="./WindowsOS_10"
   local path_win81="./WindowsOS_8.1"
