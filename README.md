@@ -4,7 +4,19 @@
 
 ![Jobs出品，必属精品](https://picsum.photos/1500/400)
 
-[toc]
+<!-- jobs-toc:start -->
+<!-- jobs-toc:source {"v":2,"token":"[toc]"} -->
+<details>
+<summary>📚 目录（点击展开 / 收起）</summary>
+
+- [一、友情外链](#jobs-toc-heading-1)
+- [二、痛点一览](#jobs-toc-heading-2)
+- [三、Github Realease](#jobs-toc-heading-3)
+- [四、实操](#jobs-toc-heading-4)
+- [五、子模块的多平台地址](#jobs-toc-heading-5)
+
+</details>
+<!-- jobs-toc:end -->
 
 <strong id="submodule-quick-look">先看例子：Windows 子仓跟随父仓平台</strong>
 
@@ -25,14 +37,14 @@
 
 **`path` 是本地目录，`url` 是远端仓名；目标平台须已有对应子仓、所需提交和添加分支。** 表格说明解析规则，不代表这些线路均已部署或实测；自建服务行为同样适用于 [**GitLab**](https://gitlab.com)。已有明确 URL 保留，分支默认 `main`，可通过 `SUBMODULE_BRANCH` 指定。仓库地址适配不会迁移 Release 附件。
 
-## 一、友情外链 <a href="#前言" style="font-size:17px; color:green;"><b>🔼</b></a> <a href="#🔚" style="font-size:17px; color:green;"><b>🔽</b></a>
+## <span id="jobs-toc-heading-1" data-jobs-toc="v2">一、友情外链 <a href="#前言" style="font-size:17px; color:green;"><b>🔼</b></a> <a href="#🔚" style="font-size:17px; color:green;"><b>🔽</b></a></span><!-- jobs-toc:heading-end -->
 
 本目录中可独立运行的 `.command` 入口先显示内置自述：标题红色加粗，编号正文蓝色且不加粗；在终端按回车确认后才进入原有流程，按 `Ctrl+C` 取消。非彩色终端显示纯文本；没有可交互输入时停止，避免确认缺失后继续执行。
 
 * [**一键激活 windows/office**](https://kms.cx/)
 * [**Microsoft-Activation-Scripts**](https://github.com/massgravel/Microsoft-Activation-Scripts)
 
-## 二、痛点一览 <a href="#前言" style="font-size:17px; color:green;"><b>🔼</b></a> <a href="#🔚" style="font-size:17px; color:green;"><b>🔽</b></a>
+## <span id="jobs-toc-heading-2" data-jobs-toc="v2">二、痛点一览 <a href="#前言" style="font-size:17px; color:green;"><b>🔼</b></a> <a href="#🔚" style="font-size:17px; color:green;"><b>🔽</b></a></span><!-- jobs-toc:heading-end -->
 
 * 中国大陆的云盘产品普遍会针对非会员进行限速
 * [**Github**](https://github.com/)会限制上传的**单文件大小**以及**本批次的总的文件大小**
@@ -40,13 +52,13 @@
   * 且单批次推送的文件体积不宜过大（根据 [**Github**](https://github.com/) 官方文档，<font color=red>单次 push 的硬性上限为 **2 GiB**</font>）
   * 此外， [**Github**](https://github.com/) 还建议仓库整体尽量保持在 **1 GB 以内**，**小于 5 GB** 会更利于克隆、拉取和日常协作性能
 
-## 三、[**Github**](https://github.com/) **Realease** <a href="#前言" style="font-size:17px; color:green;"><b>🔼</b></a> <a href="#🔚" style="font-size:17px; color:green;"><b>🔽</b></a>
+## <span id="jobs-toc-heading-3" data-jobs-toc="v2">三、[**Github**](https://github.com/) **Realease** <a href="#前言" style="font-size:17px; color:green;"><b>🔼</b></a> <a href="#🔚" style="font-size:17px; color:green;"><b>🔽</b></a></span><!-- jobs-toc:heading-end -->
 
 * 经常接触到的代码版本控制，实际上是针对可读性较好的文本文件进行切片式管理
 * [**Github**](https://github.com/) **Realease**的设计目标是**针对代码打包以后的产物（二进制）**进行版本管理
   * 代码按照条件（平台/芯片等限制）通过编译器进行编译以后的产物，体积往往非常大
 
-## 四、实操 <a href="#前言" style="font-size:17px; color:green;"><b>🔼</b></a> <a href="#🔚" style="font-size:17px; color:green;"><b>🔽</b></a>
+## <span id="jobs-toc-heading-4" data-jobs-toc="v2">四、实操 <a href="#前言" style="font-size:17px; color:green;"><b>🔼</b></a> <a href="#🔚" style="font-size:17px; color:green;"><b>🔽</b></a></span><!-- jobs-toc:heading-end -->
 
 * 环境安装/配置 [**gh**](https://cli.github.com/manual/gh)
 
@@ -143,7 +155,7 @@
 
   
 
-## 五、子模块的多平台地址 <a href="#前言" style="font-size:17px; color:green;"><b>🔼</b></a> <a href="#🔚" style="font-size:17px; color:green;"><b>🔽</b></a>
+## <span id="jobs-toc-heading-5" data-jobs-toc="v2">五、子模块的多平台地址 <a href="#前言" style="font-size:17px; color:green;"><b>🔼</b></a> <a href="#🔚" style="font-size:17px; color:green;"><b>🔽</b></a></span><!-- jobs-toc:heading-end -->
 
 `【MacOS】⬆️Git添加WindowsOS子模块.command` 为新增子模块使用 `../WindowsOS_10.git` 等相对地址，跟随父仓默认远端的平台、账号和协议，适用于 [**Git**](https://git-scm.com/) 支持的托管服务。目标平台必须已有同名子仓和所需提交；脚本不会创建镜像。已有明确 URL 会保留，不因绝对地址与相对地址表示不同而删除子模块。
 
