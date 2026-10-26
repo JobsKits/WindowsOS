@@ -1,299 +1,198 @@
 #!/bin/zsh
 # 脚本自述：
 # - 脚本名称：【MacOS】⬆️Git添加WindowsOS子模块.command
-# - 核心用途：Git添加WindowsOS子模块。
-# - 影响范围：Git 工作区、子模块或仓库状态；脚本指定文件或缓存的删除 / 清理；脚本所在工程或指定目标中的文件。
-# - 运行提示：先阅读自述并按回车确认，按 Ctrl+C 取消。
-JOBS_COMMAND_ENTRY_ARG0="$0"
-# 仅渲染自述：标题红色加粗，编号正文蓝色常规字重；非彩色终端输出纯文本。
-jobs_intro_style() {
-  local intro_color=0
-  if [ -t 1 ] && [ -n "${TERM:-}" ] && [ "${TERM:-}" != dumb ] &&
-     [ -z "${NO_COLOR+x}" ] && [ "${PLAIN_OUTPUT:-0}" != 1 ] &&
-     [ "${IS_SOURCETREE_RUNTIME:-0}" != 1 ]; then
-    intro_color=1
-  fi
-  /usr/bin/awk -v color="$intro_color" -v role="${1:-body}" '
-    BEGIN { esc = sprintf("%c", 27) }
-    {
-      gsub(esc "\\[[0-9;]*m", "")
-      gsub(/\\(033|e|x1[bB])\[[0-9;]*m/, "")
-      if (!color || $0 ~ /^[[:space:]]*$/) { print; next }
-      numbered = ($0 ~ /^[[:space:]➤ℹ🔹✔⚠]*([0-9]+[、.)）]|[0-9]+️⃣|[-•])/)
-      heading = ($0 ~ /^[[:space:]]*#{1,6}[[:space:]]/ || $0 ~ /[：:][[:space:]]*$/ || $0 ~ /^[[:space:]]*[=━─-]{3}/)
-      title = (!numbered && (role == "title" || heading))
-      if (role == "auto" && !seen && !numbered) title = 1
-      if ($0 !~ /^[[:space:]]*[=━─-]+[[:space:]]*$/) seen = 1
-      printf "%s%s%s\n", esc (title ? "[1;31m" : "[0;34m"), $0, esc "[0m"
-    }
-  '
-}
-# 打印固定自述，确认后才进入原有脚本流程。
+# - 核心用途：增量关联六个 Windows 子仓，登记 .gitmodules 与真实 gitlink。
+# - 影响范围：仅新增子仓的工作区、父仓 .gitmodules / gitlink 索引及本地登记；不提交、不推送。
+# - 运行提示：先读自述并按回车确认；添加前再次确认，回车跳过；--dry-run 只检查不写入。
+# shell: zsh
+
+ENTRY_PATH="$0"
+SCRIPT_DIR=""
+LOG_FILE=""
+DRY_RUN=0
+HELP_ONLY=0
+SUBMODULE_NAMES=(WindowsOS_8.1 WindowsOS_10 WindowsOS_11 WindowsOS_2003 WindowsOS_XP WindowsOS_7)
+MISSING_NAMES=()
+
+# 准备展示路径并打印固定自述，写操作必须等用户确认后执行。
 show_script_intro_and_wait() {
-  printf '%s\n' '【MacOS】⬆️Git添加WindowsOS子模块.command' | jobs_intro_style title
-  printf '%s\n' '1、核心用途：Git添加WindowsOS子模块；新增地址跟随父仓平台、账号和协议。' | jobs_intro_style body
-  printf '%s\n' '2、影响范围：Git 工作区、子模块或仓库状态；脚本指定文件或缓存的删除 / 清理；脚本所在工程或指定目标中的文件。' | jobs_intro_style body
-  printf '%s\n' '3、运行策略：确认后执行原有流程；后续危险操作的确认保持原样。' | jobs_intro_style body
-  printf '%s\n' '4、取消方式：按 Ctrl+C 终止；确认前不执行真实业务。' | jobs_intro_style body
-  if [ ! -t 0 ]; then
-    printf '%s\n' '当前没有可交互输入，请在终端中重新运行。' >&2
-    exit 1
-  fi
-  printf '%s' '已了解脚本用途与影响，按回车继续；按 Ctrl+C 取消：'
-  IFS= read -r jobs_intro_answer || exit 1
+  SCRIPT_DIR="${ENTRY_PATH:A:h}"
+  LOG_FILE="${TMPDIR:-/tmp}/${ENTRY_PATH:t:r}.$$.log"
+  local arg answer=""
+  for arg in "$@"; do
+    [[ "$arg" == --dry-run ]] && DRY_RUN=1
+    [[ "$arg" == --help || "$arg" == -h ]] && HELP_ONLY=1
+  done
+  intro_line title 'WindowsOS 增量添加 Git 子模块'
+  intro_line body '1、关联 WindowsOS_8.1 / 10 / 11 / 2003 / XP / 7，保留已有登记和子仓。'
+  intro_line body '2、新增项使用 git submodule add，暂存对应 .gitmodules 与 gitlink；不处理其它暂存文件。'
+  intro_line body '3、不清理目录、不重置、不提交、不推送；Ctrl+C 取消。'
+  intro_line body "4、日志：$LOG_FILE；--dry-run 只读预检，不下载、不创建日志。"
+  (( DRY_RUN || HELP_ONLY )) && return 0
+  [[ -t 0 ]] || { print -u2 -r -- '✖ 当前没有可交互输入，请在终端运行；只读可用 --dry-run。'; exit 1; }
+  read -r 'answer?已了解用途与影响，按回车继续；Ctrl+C 取消：' || exit 1
 }
-# 确认后执行原有业务，保留原来的参数、交互和退出策略。
-jobs_run_original_script() {
-  0="$JOBS_COMMAND_ENTRY_ARG0"
-set -euo pipefail
-
-# ================================== 聚合管理 WindowsOS 子仓库（可重复执行 / 可修复旧状态） ==================================
-# 用途：
-# 1) 在当前目录初始化一个聚合 Git 仓库（如果还不是 Git 仓库）
-# 2) 把以下仓库作为 submodule 纳入统一管理：
-#    - JobsKits/WindowsOS_10
-#    - JobsKits/WindowsOS_8.1
-#    - JobsKits/WindowsOS_7
-#    - JobsKits/WindowsOS_XP
-#    - JobsKits/WindowsOS_2003
-# 3) 可重复执行：遇到半残 submodule / index 残留 / .git/modules 缓存都会自动修复
-
-# 终端执行目录转向脚本所在目录
-script_path="$(cd "$(dirname "${BASH_SOURCE[0]:-${(%):-%x}}")" && pwd)"
-cd "$script_path"
-
-info()  { print -P "%F{cyan}🔧 $*%f" }
-ok()    { print -P "%F{green}✅ $*%f" }
-warn()  { print -P "%F{yellow}⚠️  $*%f" }
-err()   { print -P "%F{red}❌ $*%f" }
-
-cpu_jobs() {
-  if command -v sysctl >/dev/null 2>&1; then
-    sysctl -n hw.ncpu 2>/dev/null || echo 4
-  elif command -v nproc >/dev/null 2>&1; then
-    nproc 2>/dev/null || echo 4
+# 自述标题红色加粗、正文蓝色，非彩色环境输出纯文本。
+intro_line() {
+  local code='0;34'
+  [[ "$1" == title ]] && code='1;31'
+  if [[ -t 1 && -n "${TERM:-}" && "$TERM" != dumb && -z "${NO_COLOR+x}" && -z "${SOURCETREE:-}${SOURCE_TREE:-}" ]]; then
+    printf '\033[%sm%s\033[0m\n' "$code" "$2"
   else
-    echo 4
+    print -r -- "$2"
   fi
 }
-
-ensure_git_repo() {
-  if git rev-parse --is-inside-work-tree >/dev/null 2>&1; then
-    ok "当前目录已是 Git 仓库：$(pwd)"
+# 展示输出过滤 ANSI 和 URL 敏感字段，不改写实际地址。
+sanitize_stream() {
+  sed -E $'s/\033\\[[0-9;]*[[:alpha:]]//g; s#(https?://)[^/@[:space:]]+:[^/@[:space:]]+@#\\1[REDACTED]@#g; s#(https?://)[^/@[:space:]]+@#\\1[REDACTED]@#g; s#(https?://[^?[:space:]]+)\\?[^[:space:]]*#\\1?[REDACTED]#g'
+}
+# 同步打印并保存脱敏纯文本日志。
+log_message() {
+  if (( DRY_RUN || HELP_ONLY )); then
+    print -r -- "$*" | sanitize_stream
   else
-    info "初始化聚合 Git 仓库：$(pwd)"
-    git init
-    ok "Git init 完成"
+    print -r -- "$*" | sanitize_stream | tee -a "$LOG_FILE"
   fi
 }
-
-ensure_first_commit_if_needed() {
-  if git rev-parse --verify HEAD >/dev/null 2>&1; then
-    ok "已存在提交：$(git rev-parse --short HEAD)"
-    return
-  fi
-
-  warn "当前聚合仓库还没有任何提交，先做一次初始提交"
-  if [[ ! -e .gitignore ]]; then
-    cat > .gitignore <<'GITIGNORE'
-.DS_Store
-GITIGNORE
-  fi
-
-  if [[ ! -e README.md ]]; then
-    cat > README.md <<'README'
-# WindowsOS Aggregate
-
-This repository aggregates and tracks these submodules:
-
-- JobsKits/WindowsOS_10
-- JobsKits/WindowsOS_8.1
-- JobsKits/WindowsOS_7
-- JobsKits/WindowsOS_XP
-- JobsKits/WindowsOS_2003
-README
-  fi
-
-  git add -A
-  git commit -m "chore: initial commit for windows aggregate" || true
-  ok "初始提交完成"
+# 明确报告失败阶段并停止，已完成项保留供审阅。
+fail() {
+  log_message "✖ $*"
+  exit 1
 }
-
-print_status() {
-  info "Git 状态："
-  git status
+# 记录外部命令输出，传播任何执行失败。
+run_logged() {
+  "$@" 2>&1 | sanitize_stream | tee -a "$LOG_FILE"
 }
-
-remove_existing_submodule() {
-  local module_path="$1"
-
-  if [[ -f .gitmodules ]]; then
-    if git config -f .gitmodules --get-regexp "^submodule\..*\.path$" 2>/dev/null | awk '{print $2}' | grep -Fxq "$module_path"; then
-      warn "发现 .gitmodules 中已有该子模块 path：$module_path，执行 deinit"
-      git submodule deinit -f -- "$module_path" || true
-    fi
+# 校验选项和分支，避免参数被解释为命令选项。
+parse_options() {
+  setopt NO_NOMATCH PIPE_FAIL
+  local arg
+  for arg in "$@"; do
+    case "$arg" in
+      --dry-run|--help|-h) ;;
+      *) fail "未知参数：$arg" ;;
+    esac
+  done
+  if (( HELP_ONLY )); then
+    print -r -- '用法：/bin/zsh 脚本.command [--dry-run]'
+    print -r -- 'SUBMODULE_BRANCH 默认 main；SUBMODULE_URL_PREFIX 默认 https://github.com/JobsKits。'
+    print -r -- '环境参数只用于新登记，已有 section / URL / branch / gitlink 保留。'
+    exit 0
   fi
-
-  if git ls-files --stage -- "$module_path" | grep -q .; then
-    warn "发现 index 已记录该 path：$module_path，执行 git rm 清理"
-    git rm -f --cached -- "$module_path" || true
-    git rm -f -- "$module_path" || true
-  fi
-
-  if [[ -d ".git/modules/$module_path" ]]; then
-    warn "清理 .git/modules 缓存：.git/modules/$module_path"
-    rm -rf ".git/modules/$module_path"
-  fi
-
-  if [[ -e "$module_path" ]]; then
-    warn "清理工作区残留：$module_path"
-    rm -rf "$module_path"
-  fi
-
-  ok "移除旧状态完成：$module_path"
+  command -v git >/dev/null && git --version >/dev/null || fail 'Git 不可用，请先安装 Git / Command Line Tools。'
+  git check-ref-format --branch "${SUBMODULE_BRANCH:-main}" >/dev/null || fail 'SUBMODULE_BRANCH 不是有效分支。'
+  [[ "${SUBMODULE_URL_PREFIX:-https://github.com/JobsKits}" != *$'\n'* && "${SUBMODULE_URL_PREFIX:-https://github.com/JobsKits}" != -* ]] || fail '来源地址无效。'
 }
-
-ensure_submodule_url() {
-  local module_path="$1"
-  local url="$2"
-
-  if [[ -f .gitmodules ]]; then
-    local old_url
-    old_url="$(git config -f .gitmodules --get-regexp "^submodule\..*\.path$" 2>/dev/null | awk -v p="$module_path" '$2==p {print $1}' | sed 's/\.path$/.url/' | head -n 1 || true)"
-    if [[ -n "$old_url" ]]; then
-      local configured_url
-      configured_url="$(git config -f .gitmodules --get "$old_url" 2>/dev/null || true)"
-      if [[ -n "$configured_url" && "$configured_url" != "$url" ]]; then
-        warn "保留 $module_path 已有的明确 URL：$configured_url；不因地址表示不同重建子模块。"
+# 验证仓库、锁与冲突，禁止在未结束操作期间登记。
+check_environment() {
+  [[ "$(git -C "$SCRIPT_DIR" rev-parse --show-toplevel 2>/dev/null)" == "$SCRIPT_DIR" ]] || fail '脚本必须位于已有父仓根目录。'
+  git -C "$SCRIPT_DIR" rev-parse --verify HEAD >/dev/null || fail '父仓尚无提交；请由用户先建立初始提交。'
+  local marker location
+  for marker in index.lock HEAD.lock packed-refs.lock MERGE_HEAD CHERRY_PICK_HEAD REVERT_HEAD rebase-merge rebase-apply; do
+    location="$(git -C "$SCRIPT_DIR" rev-parse --path-format=absolute --git-path "$marker")" || fail '无法检查 Git 状态。'
+    [[ ! -e "$location" ]] || fail "父仓有锁或未完成操作：$marker"
+  done
+  [[ -z "$(git -C "$SCRIPT_DIR" ls-files --unmerged)" ]] || fail '父仓有合并冲突。'
+  [[ ! -L "$SCRIPT_DIR/.gitmodules" ]] || fail '拒绝符号链接 .gitmodules。'
+  if [[ -e "$SCRIPT_DIR/.gitmodules" ]]; then
+    [[ -f "$SCRIPT_DIR/.gitmodules" ]] || fail '.gitmodules 不是普通文件。'
+    git -C "$SCRIPT_DIR" config -f .gitmodules --list >/dev/null || fail '.gitmodules 无法解析。'
+  fi
+}
+# 完整预检六仓再写入；既有登记只核验，不覆盖 URL、branch 或索引指针。
+prepare_registration_plan() {
+  local name record key rel section existing item url
+  local -a records=()
+  if [[ -f "$SCRIPT_DIR/.gitmodules" ]]; then
+    while IFS= read -r -d '' record; do
+      records+=("$record")
+    done < <(git -C "$SCRIPT_DIR" config -z -f .gitmodules --get-regexp '^submodule\..*\.path$')
+  fi
+  for name in "${SUBMODULE_NAMES[@]}"; do
+    existing=""
+    for record in "${records[@]}"; do
+      key="${record%%$'\n'*}"
+      rel="${record#*$'\n'}"
+      if [[ "$rel" == "$name" ]]; then
+        [[ -z "$existing" ]] || fail "重复登记同一路径：$name"
+        existing="${${key#submodule.}%.path}"
       fi
+    done
+    [[ ! -L "$SCRIPT_DIR/$name" ]] || fail "拒绝符号链接子仓：$name"
+    item="$(git -C "$SCRIPT_DIR" ls-files --stage -- "$name")" || fail "无法读取索引：$name"
+    if [[ -n "$existing" ]]; then
+      url="$(git -C "$SCRIPT_DIR" config -f .gitmodules --get "submodule.$existing.url")" || fail "已有子模块缺少 URL：$existing"
+      [[ "$item" == '160000 '* && "$item" != *$'\n'* && "${${item#* }#* }" == "0"$'\t'"$name" ]] || fail "已有登记缺少有效 gitlink，保留并停止：$name"
+      if [[ -e "$SCRIPT_DIR/$name/.git" ]]; then
+        [[ "$(git -C "$SCRIPT_DIR/$name" rev-parse --show-toplevel 2>/dev/null)" == "$SCRIPT_DIR/$name" ]] || fail "已有子仓损坏：$name"
+      elif [[ -e "$SCRIPT_DIR/$name" && ( ! -d "$SCRIPT_DIR/$name" || -n "$(ls -A "$SCRIPT_DIR/$name")" ) ]]; then
+        fail "已有路径非空但不是 Git 仓：$name"
+      fi
+      log_message "ℹ 保留已有登记：$name | section=$existing | $url"
+      continue
     fi
+    [[ -z "$item" ]] || fail "目标已经被跟踪或暂存删除，保留并停止：$name"
+    if git -C "$SCRIPT_DIR" cat-file -e "HEAD:$name" 2>/dev/null; then
+      fail "目标在 HEAD 中已跟踪但索引缺失，可能有暂存删除：$name"
+    fi
+    if [[ -e "$SCRIPT_DIR/$name" ]]; then
+      [[ -d "$SCRIPT_DIR/$name" && -z "$(ls -A "$SCRIPT_DIR/$name")" ]] || fail "新增目标已有内容，保留并停止：$name"
+    fi
+    if [[ -f "$SCRIPT_DIR/.gitmodules" ]] && git -C "$SCRIPT_DIR" config -f .gitmodules --get-regexp "^submodule\\.${name//./\\.}\\." >/dev/null 2>&1; then
+      fail "同名 section 已用于其它路径：$name"
+    fi
+    MISSING_NAMES+=("$name")
+    log_message "计划新增：$name | ${SUBMODULE_URL_PREFIX:-https://github.com/JobsKits}/$name.git | branch=${SUBMODULE_BRANCH:-main}"
+  done
+  if (( ${#MISSING_NAMES} )); then
+    git -C "$SCRIPT_DIR" diff --quiet -- .gitmodules && git -C "$SCRIPT_DIR" diff --cached --quiet -- .gitmodules || fail '.gitmodules 已有工作区或暂存改动；请先审阅，避免新增操作一并暂存它们。'
   fi
 }
-
-add_submodule() {
-  local branch="$1"
-  local url="$2"
-  local module_path="$3"
-
-  ensure_submodule_url "$module_path" "$url"
-
-  if [[ -d "$module_path/.git" || -f "$module_path/.git" ]]; then
-    ok "子模块目录已存在，跳过 add：$module_path"
-    return
-  fi
-
-  info "添加子模块：$url -> $module_path （branch=$branch）"
-  git submodule add -b "$branch" "$url" "$module_path"
-  ok "已添加：$module_path"
-}
-
-sync_and_update_submodules() {
-  local jobs
-  jobs="$(cpu_jobs)"
-
-  info "同步 submodule url 记录"
-  git submodule sync --recursive
-
-  info "初始化并拉取子模块内容"
-  git submodule update --init --recursive --jobs="$jobs"
-
-  info "吸收子模块内部 .git 目录"
-  git submodule absorbgitdirs
-
-  info "让全部子模块按各自 branch 前移到远端最新"
-  git submodule update --remote --merge --recursive --jobs="$jobs"
-
-  info "再次吸收 .git 目录"
-  git submodule absorbgitdirs
-
-  ok "子模块同步/更新完成"
-}
-
-commit_changes_if_any() {
-  info "提交聚合仓库变更（如有）"
-  git add -A
-
-  if git diff --cached --quiet; then
-    warn "暂存区无变更，不需要提交"
-    return
-  fi
-
-  git commit -m "chore: sync windows submodules"
-  ok "已提交聚合仓库变更"
-}
-
-verify_gitfile_form() {
-  local module_path="$1"
-  if [[ -f "$module_path/.git" ]]; then
-    ok "子模块 .git 为文件形式：$module_path/.git"
+# 确认后仅登记缺失项，使用 Git 官方命令生成关联与归集元数据。
+apply_registration_plan() {
+  local answer="" name url actual parent_remote parent_url backup_dir
+  if (( DRY_RUN )); then
+    log_message "✔ 只读预检完成，缺少 ${#MISSING_NAMES} 项；没有写入或下载。"
     return 0
   fi
-  if [[ -d "$module_path/.git" ]]; then
-    warn "子模块 .git 仍是目录：$module_path/.git"
-    return 1
+  : >> "$LOG_FILE" || exit 1
+  trap 'log_message "⚠ 已中断；已完成的登记保留供审阅。"; exit 130' INT TERM
+  if (( ! ${#MISSING_NAMES} )); then
+    log_message '✔ 六仓均已登记；不更新子仓、不修改已有配置或索引。'
+    return 0
   fi
-  warn "子模块缺少 .git：$module_path"
-  return 1
+  read -r 'answer?输入任意字符后回车登记所列新增项；直接回车跳过：' || exit 1
+  [[ -n "$answer" ]] || return 0
+  backup_dir="$(mktemp -d "${TMPDIR:-/tmp}/windowsos-registration.XXXXXX")" || fail '无法建立登记前备份。'
+  if [[ -f "$SCRIPT_DIR/.gitmodules" ]]; then
+    cp -p "$SCRIPT_DIR/.gitmodules" "$backup_dir/gitmodules.before" || fail '备份 .gitmodules 失败。'
+  fi
+  git -C "$SCRIPT_DIR" ls-files --stage > "$backup_dir/index-entries.before.txt" || fail '无法保存索引条目快照。'
+  log_message "登记前清单与索引条目快照：$backup_dir"
+  parent_remote="$(git -C "$SCRIPT_DIR" config --get "branch.$(git -C "$SCRIPT_DIR" symbolic-ref --quiet --short HEAD).remote" 2>/dev/null)"
+  [[ -n "$parent_remote" && "$parent_remote" != . ]] || parent_remote=origin
+  parent_url="$(git -C "$SCRIPT_DIR" config --get "remote.$parent_remote.url" 2>/dev/null)"
+  for name in "${MISSING_NAMES[@]}"; do
+    url="${SUBMODULE_URL_PREFIX:-https://github.com/JobsKits}/$name.git"
+    actual="$(git -C / ls-remote --get-url "$url")" || fail "无法展开首次克隆来源：$name"
+    log_message '━━━━━━━━━━ 来源｜添加 Git 子模块 ━━━━━━━━━━'
+    log_message "📦 子仓：$name | 🌐 主机：${${actual#*://}%%/*}"
+    log_message "父仓：$SCRIPT_DIR | remote=$parent_remote | $parent_url"
+    log_message "登记地址：$url | 拉取地址（系统 / 全局 / 进程规则展开）：$actual"
+    log_message "分支：${SUBMODULE_BRANCH:-main} | 目标：$SCRIPT_DIR/$name"
+    run_logged git -C "$SCRIPT_DIR" submodule add -b "${SUBMODULE_BRANCH:-main}" -- "$url" "$name" || fail "添加失败：$name；来源：$actual；已完成项保留。"
+    run_logged git -C "$SCRIPT_DIR" submodule absorbgitdirs -- "$name" || fail "元数据归集失败：$name"
+    [[ -f "$SCRIPT_DIR/$name/.git" ]] || fail "子仓 .git 指针核验失败：$name"
+    log_message "✔ 已登记：$name @ $(git -C "$SCRIPT_DIR/$name" rev-parse HEAD)；来源：$actual"
+  done
+  log_message "✔ 已添加 ${#MISSING_NAMES} 个子模块；仅相关 .gitmodules 与 gitlink 已暂存，请审阅；未提交、未推送。日志：$LOG_FILE"
 }
-
-show_submodule_summary() {
-  info "当前 submodule 摘要："
-  git submodule status --recursive || true
-}
-
+# 集中编排说明、校验、完整预检与增量登记。
 main() {
-  ensure_git_repo
-  ensure_first_commit_if_needed
-  print_status
-
-  local branch="${SUBMODULE_BRANCH:-main}"
-
-  local url_win10="../WindowsOS_10.git"
-  local url_win81="../WindowsOS_8.1.git"
-  local url_win7="../WindowsOS_7.git"
-  local url_winxp="../WindowsOS_XP.git"
-  local url_win2003="../WindowsOS_2003.git"
-
-  local path_win10="./WindowsOS_10"
-  local path_win81="./WindowsOS_8.1"
-  local path_win7="./WindowsOS_7"
-  local path_winxp="./WindowsOS_XP"
-  local path_win2003="./WindowsOS_2003"
-
-  # 如需强制重建，把下面 5 行解除注释。
-  # remove_existing_submodule "$path_win10"
-  # remove_existing_submodule "$path_win81"
-  # remove_existing_submodule "$path_win7"
-  # remove_existing_submodule "$path_winxp"
-  # remove_existing_submodule "$path_win2003"
-
-  add_submodule "$branch" "$url_win10" "$path_win10"
-  add_submodule "$branch" "$url_win81" "$path_win81"
-  add_submodule "$branch" "$url_win7" "$path_win7"
-  add_submodule "$branch" "$url_winxp" "$path_winxp"
-  add_submodule "$branch" "$url_win2003" "$path_win2003"
-
-  sync_and_update_submodules
-  commit_changes_if_any
-
-  info "验证子模块 .git 形态："
-  verify_gitfile_form "$path_win10" || true
-  verify_gitfile_form "$path_win81" || true
-  verify_gitfile_form "$path_win7" || true
-  verify_gitfile_form "$path_winxp" || true
-  verify_gitfile_form "$path_win2003" || true
-
-  show_submodule_summary
-
-  ok "全部完成"
-  print_status
-}
-
-main "$@"
-}
-# 编排自述确认与原有业务。
-main() {
-  show_script_intro_and_wait # 展示用途与影响，并等待回车确认。
-  jobs_run_original_script "$@" # 继续执行原有脚本流程。
+  show_script_intro_and_wait "$@" # 首先说明索引影响，普通运行等待回车。
+  parse_options "$@" # 校验只读选项、来源前缀和目标分支。
+  check_environment # 确认父仓与 Git 操作状态可安全登记。
+  prepare_registration_plan # 预检全部目标，保留既有记录与内容。
+  apply_registration_plan # 确认后仅新增缺项，并核验真实子模块关联。
 }
 main "$@"
