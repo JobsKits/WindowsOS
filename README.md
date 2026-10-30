@@ -25,7 +25,9 @@
 
 <strong id="submodule-quick-look">当前配置与按需下载</strong>
 
-本仓是聚合父仓，下面六个目录是真正的 [**Git 子模块**](https://git-scm.com/book/en/v2/Git-Tools-Submodules)，各自保留独立历史。Git 拉取只取得仓库中的说明、许可证等受跟踪文件；系统镜像、分卷及附件通过独立的 Release 下载流程选择。
+本仓是聚合父仓，下面六个目录是真正的 [**Git 子模块**](https://git-scm.com/book/en/v2/Git-Tools-Submodules)，各自保留独立历史。各子仓 Git 源码内提供说明、许可证以及 `MacOS/`、`WindowsOS/` 两套拆分 / 合并工具；Releases 只发布对应系统的分卷镜像，通过独立下载流程选择。
+
+工具版本为 `2026.10.28`：macOS 拆分支持文件 / 目录输入，合并检查完整卷号并按数字顺序还原；Windows 默认读取相同的 `原文件名@序号of总数`，通过 `-LegacyManifest` 保留旧清单 / gzip。两端均验证大小与 SHA-256，已有目标不覆盖。Windows 工具要求 Windows 10 + PowerShell 5.1 或更新版本，不能因为镜像仓名是 XP / 2003 / 7 / 8.1 就在旧系统上直接运行；具体入口、依赖和确认见各子仓 `MacOS/README.md` 与 `WindowsOS/README.md`。工具不再作为 Release 附件下载，也不会随镜像下载自动执行。
 
 | 本地子模块与说明 | Git 远端 | 镜像与附件 |
 | --- | --- | --- |
@@ -255,7 +257,7 @@ Git 传输前的来源块会同时显示登记地址与实际 remote 展开地�
 - 通过 fzf 多选 Windows 子仓，逐仓单选 Release、多选附件，展示文件大小和计划总量；顶部和底部均保留操作提示。
   - 附件面板按 `←` 返回当前仓 Release；独立入口的 Release 面板可返回仓库多选，主入口交接时可返回主入口。直接通过 `--repo` 预选且没有前置选择面板时，Release 是本入口首层。
   - 选中 `文件.iso@1ofN` 等任意分卷时自动补齐同组全部分卷，避免遗漏。
-  - `merge.command`、`split.command` 等脚本作为普通附件，需要时选择下载，下载后不会自动执行。
+  - 合并 / 拆分工具从所选子仓的 Git 源码取得，Release 附件列表只选择镜像分卷；下载后不会自动执行工具。
 - 目标必须是已初始化的真实子仓；首次使用先通过主入口同步 Git。确认下载后写入 `<子仓>/Releases/<Release标签>/`，并在该子仓 `info/exclude` 追加精确的 `/Releases/` 本地排除规则，保留已有规则，不改动其受跟踪的 `.gitignore`。
 - 断点续传、检查大小及 API 提供的 SHA-256，校验通过才成为完成文件；完整文件跳过，同名不符文件保留并报错。
 - 网络或校验失败返回失败，保留续传数据；运行日志位于临时目录。只读清单不修改 Git 排除配置，旧 `ReleaseDownloads/` 内容保留，不自动迁移或删除。
@@ -297,6 +299,6 @@ Release 查询有匿名 API 速率限制，限流、超时或无有效附件时�
 
 Release 按资产 ID 的 GitHub API 地址传输，并通过 HTTPS 重定向取回附件；日志同时保留浏览器下载地址与 API 传输地址。每版只允许一个本脚本下载进程，异常强制退出后若留下 `.download-lock`，确认已无下载进程再移除该空目录。续传数据位于同版 `.partial/`；远端附件身份发生变化或断点校验不符时保留文件并停止，先将旧断点移到其它位置再重试。标签用于目录名时做 URI 编码，普通 `v1.0.0` 保持原样。
 
-下载完成只证明与 Release 元数据一致，不等同于验证操作系统能安装、镜像来源安全或旧系统可用。分卷合并请先审阅同版 `merge.command`；脚本不会自动执行远端附件、合并 ISO、挂载镜像或安装系统。
+下载完成只证明与 Release 元数据一致，不等同于验证操作系统能安装、镜像来源安全或旧系统可用。分卷合并请先审阅对应子仓 Git 源码中的 `MacOS/merge.command/merge.command` 或 Windows 合并入口；macOS 拆分、合并各自以功能文件夹包装，入口与专属 `README.md` 同级。下载脚本不会自动执行远端附件、合并 ISO、挂载镜像或安装系统。
 
 <a id="🔚" href="#前言" style="font-size:17px; color:green; font-weight:bold;">我是有底线的➤点我回到首页</a>
