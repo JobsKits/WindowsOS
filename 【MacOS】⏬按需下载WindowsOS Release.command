@@ -2,7 +2,7 @@
 # 脚本自述：
 # - 脚本名称：【MacOS】⏬按需下载WindowsOS Release.command
 # - 核心用途：选择 Windows 子仓、Release 和附件，自动补齐同组 ISO 分卷后按需下载。
-# - 影响范围：写对应子仓 Releases、该仓本地忽略与临时日志；分卷全部校验通过后运行同版 merge.command。
+# - 影响范围：写对应子仓 Releases、该仓本地忽略与临时日志；多卷校验通过后调用对应子仓 MacOS 合并功能包。
 # - 运行提示：普通模式先回车确认；下载失败持续重试至校验成功；Ctrl+C 取消并保留断点。
 # shell: zsh
 
@@ -571,8 +571,8 @@ show_help() {
   print -r -- '  --parent-back          内部交接参数：允许 ← 返回主入口的上一选择面板。'
   print -r -- '文件按 API 大小及可用 SHA256 校验；.partial 内保留断点，正式同名文件不符时停止该文件。'
   print -r -- '下载实时显示当前附件序号、curl 百分比、传输速度与预计剩余时间；续传从已有断点继续。'
-  print -r -- '所选分卷全部校验通过后自动进入同版 merge.command；保留合并脚本的交互与删除确认。'
-  print -r -- '仅运行同版目录中已有的 merge.command；没有则正常跳过，不自动补选下载或复制工具。'
+  print -r -- '多卷 ISO 全部校验通过后自动进入对应子仓 MacOS/merge.command/merge.command；保留分组选择与删除确认。'
+  print -r -- '合并扫描和输出均为本次 Release 目录；单文件不合并，不执行下载所得的合并脚本。'
   print -r -- '附件传输失败持续重试，不限次数或总时长；成功并校验后才继续下一片，Ctrl+C 或关窗可结束。'
   print -r -- '优先遵守服务器等待时间；普通退避 1→2→4→…→300 秒，访问拒绝或限流从 60 秒起退避。'
   print -r -- '坏摘要或不支持续传时保留首份问题断点，再从零重取；正式同名冲突、路径不安全和本地写入错误仍明确报错。'
@@ -592,7 +592,7 @@ show_script_intro_and_wait() {
   done
   intro_line title '【MacOS】⏬按需下载WindowsOS Release.command'
   intro_line body '1、核心用途：选择子仓、Release 和附件；自动补齐 ISO 分卷，可断点续传。'
-  intro_line body '2、下载位置：对应子仓 Releases/<标签>/；分卷全部校验通过后，有同版 merge.command 就运行，没有则正常跳过。'
+  intro_line body '2、下载位置：对应子仓 Releases/<标签>/；多卷校验成功后调用子仓 MacOS 合并功能包，输出留在本版目录。'
   jobs_prompt_output intro_line body '3、运行策略：附件失败持续续传至校验成功；API 限流自动等待，Ctrl+C 或关窗结束；最终回车或空格后回车执行，非空白内容则不执行。'
   intro_line body '4、子层按 ← 返回上层；Ctrl+C 取消并保留断点；日志在临时目录 WindowsOS-Release.log.XXXXXX。'
   intro_line body '5、下载显示附件序号、百分比、速度与剩余时间；自动进入合并脚本后，按其自述选择分卷组，默认保留分卷。'
@@ -1532,30 +1532,31 @@ download_asset() {
   (( SUCCESS_COUNT++ ))
   return 0
 }
-# 下载完成后只运行同版已有的合并入口，缺失正常跳过；保留原有交互与退出状态。
+# 全部附件校验成功后调用仓库自带工具；明确扫描及输出目录，不执行下载的脚本。
 run_release_merge() {
-  local directory="$1" number="" name="" has_splits=0 result=0
-  local merge_script="$1/merge.command"
+  local directory="$1" repository="$2" number="" name="" has_splits=0 result=0
+  local merge_script="$DOWNLOAD_ROOT/$repository/MacOS/merge.command/merge.command"
   for number in "${SELECTED_ASSETS[@]}"; do
     name="$(print -r -- "$ASSETS_JSON" | jq -r ".[$((number-1))].name")" || return 1
-    [[ "$name" =~ '^.*\.iso@[0-9]+of[0-9]+$' ]] && has_splits=1
+    if [[ "$name" =~ '^.*\.iso@[0-9]+of([0-9]+)$' ]]; then
+      if (( ${#match[1]} <= 9 && 10#${match[1]} > 1 )); then
+        has_splits=1
+      fi
+    fi
   done
   if (( ! has_splits )); then
-    log 'ℹ 本版所选附件不含 ISO 分卷，无需运行合并脚本。'
+    log 'ℹ 本版所选附件没有需要合并的多卷 ISO；单个文件、独立 ISO 及单卷无需合并。'
     return 0
   fi
-  if [[ -L "$merge_script" || ( -e "$merge_script" && ! -f "$merge_script" ) ]]; then
-    log "✖ 合并入口不是普通文件，保留原状：$merge_script"
+  if [[ -L "$merge_script" || ! -f "$merge_script" ]]; then
+    log "✖ 缺少有效的合并入口：$merge_script；下载文件保留，请恢复本仓 MacOS/merge.command 功能包后重试。"
     return 1
   fi
-  if [[ ! -e "$merge_script" ]]; then
-    log "ℹ 本版没有 merge.command，正常跳过合并：$directory"
-    return 0
-  fi
   log "➤ 所选附件全部校验通过，正在进入合并脚本：$merge_script"
-  log '➤ 保留合并脚本自述、目录与分卷组选择；默认保留分卷，未选择或取消不代表已经合并。'
+  log "➤ 分卷扫描与合并输出位置：$directory"
+  log '➤ 按合并脚本自述选择分卷组；默认保留分卷，未选择或取消不代表已经合并。'
   (( MERGE_RUN_COUNT++ ))
-  (cd -- "$directory" && /bin/zsh "$merge_script") || result=$?
+  (cd -- "$directory" && /bin/zsh "$merge_script" --release-dir "$directory") || result=$?
   if (( result != 0 )); then
     log "✖ 合并脚本未正常结束（退出码 $result）；请查看上方输出，下载文件保留。"
     return "$result"
@@ -1609,7 +1610,7 @@ confirm_and_download() {
   log "➤ 共 ${#SELECTED_ASSETS} 个附件，声明总量 $(format_bytes "$total_bytes")；完整正确文件会跳过。"
   log "➤ 下载位置：$directory"
   log '➤ 下载时显示当前附件序号；curl 的 % 为本次传输百分比，Speed 为字节/秒，Time Left 为预计剩余时间。'
-  log '➤ 所选分卷全部下载并校验通过后，仅在本版目录有 merge.command 时运行；没有则正常跳过。'
+  log '➤ 多卷 ISO 全部下载并校验通过后，运行子仓 MacOS 合并功能包，扫描并输出到本次 Release 目录；单文件不合并。'
   prepare_download_confirmation_input || exit 1
   IFS= read -r "answer?$(jobs_prompt_render '开始本版下载？回车或空格后回车执行；输入非空白内容后回车则不执行：')" || exit 1
   if [[ "$answer" == *[^[:space:]]* ]]; then
@@ -1645,7 +1646,7 @@ confirm_and_download() {
   done
   if (( failures == 0 )); then
     result=0
-    run_release_merge "$directory" || result=$?
+    run_release_merge "$directory" "$repository" || result=$?
     if (( result != 0 )); then
       (( MERGE_FAILURE_COUNT++ ))
       release_lock
